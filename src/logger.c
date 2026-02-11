@@ -1,10 +1,18 @@
 #include "logger.h"
-#include "ansiColors.h"
+#include "ansi_colors.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
-static const char* level_name(LogLevel level) {
+#define LOG_MAX_MUTED_TAGS 64
+#define LOG_MAX_TAG_LENGTH 63
+
+static bool loggerMuted = false;
+static char mutedTags[LOG_MAX_MUTED_TAGS][LOG_MAX_TAG_LENGTH + 1];
+static size_t mutedTagCount = 0;
+
+static const char* levelName(LogLevel level) {
     switch (level) {
         case LOG_LEVEL_TRACE: return "TRACE";
         case LOG_LEVEL_INFO: return "INFO";
@@ -15,7 +23,7 @@ static const char* level_name(LogLevel level) {
     }
 }
 
-static const char* level_color(LogLevel level) {
+static const char* levelColor(LogLevel level) {
     switch (level) {
         case LOG_LEVEL_TRACE: return ANSI_COLOR_TRACE;
         case LOG_LEVEL_INFO: return ANSI_COLOR_INFO;
@@ -26,28 +34,42 @@ static const char* level_color(LogLevel level) {
     }
 }
 
-static void print_arg(FILE* out, LogArg arg) {
+static size_t findMutedTagIndex(const char* tag) {
+    if (tag == NULL || tag[0] == '\0') {
+        return mutedTagCount;
+    }
+
+    for (size_t i = 0; i < mutedTagCount; i++) {
+        if (strcmp(mutedTags[i], tag) == 0) {
+            return i;
+        }
+    }
+
+    return mutedTagCount;
+}
+
+static void printArg(FILE* out, LogArg arg) {
     switch (arg.type) {
         case LOG_ARG_CHAR:
-            fprintf(out, "%c", arg.data.char_value);
+            fprintf(out, "%c", arg.data.charValue);
             break;
         case LOG_ARG_I64:
-            fprintf(out, "%lld", arg.data.i64_value);
+            fprintf(out, "%lld", arg.data.i64Value);
             break;
         case LOG_ARG_U64:
-            fprintf(out, "%llu", arg.data.u64_value);
+            fprintf(out, "%llu", arg.data.u64Value);
             break;
         case LOG_ARG_DOUBLE:
-            fprintf(out, "%g", arg.data.double_value);
+            fprintf(out, "%g", arg.data.doubleValue);
             break;
         case LOG_ARG_CSTR:
-            fprintf(out, "%s", arg.data.cstr_value != NULL ? arg.data.cstr_value : "(null)");
+            fprintf(out, "%s", arg.data.cstrValue != NULL ? arg.data.cstrValue : "(nil)");
             break;
         case LOG_ARG_PTR:
-            fprintf(out, "%p", arg.data.ptr_value);
+            fprintf(out, "%p", arg.data.ptrValue);
             break;
         case LOG_ARG_BOOL:
-            fprintf(out, "%s", arg.data.bool_value ? "true" : "false");
+            fprintf(out, "%s", arg.data.boolValue ? "true" : "false");
             break;
         default:
             fprintf(out, "<invalid>");
@@ -55,8 +77,8 @@ static void print_arg(FILE* out, LogArg arg) {
     }
 }
 
-static void print_formatted_message(FILE* out, const char* fmt, size_t arg_count, const LogArg* args) {
-    size_t arg_index = 0;
+static void printFormattedMessage(FILE* out, const char* fmt, size_t argCount, const LogArg* args) {
+    size_t argIndex = 0;
     for (size_t i = 0; fmt[i] != '\0'; i++) {
         if (fmt[i] == '{' && fmt[i + 1] == '{') {
             fputc('{', out);
@@ -71,8 +93,8 @@ static void print_formatted_message(FILE* out, const char* fmt, size_t arg_count
         }
 
         if (fmt[i] == '{' && fmt[i + 1] == '}') {
-            if (arg_index < arg_count) {
-                print_arg(out, args[arg_index++]);
+            if (argIndex < argCount) {
+                printArg(out, args[argIndex++]);
             } else {
                 fputs("{}", out);
             }
@@ -84,47 +106,110 @@ static void print_formatted_message(FILE* out, const char* fmt, size_t arg_count
     }
 }
 
-void log_message(LogLevel level, const char* fmt, size_t arg_count, const LogArg* args) {
+void setLoggerMuted(bool muted) {
+    loggerMuted = muted;
+}
+
+bool isLoggerMuted(void) {
+    return loggerMuted;
+}
+
+bool muteLogTag(const char* tag) {
+    if (tag == NULL || tag[0] == '\0') {
+        return false;
+    }
+
+    if (findMutedTagIndex(tag) < mutedTagCount) {
+        return true;
+    }
+
+    if (mutedTagCount >= LOG_MAX_MUTED_TAGS) {
+        return false;
+    }
+
+    strncpy(mutedTags[mutedTagCount], tag, LOG_MAX_TAG_LENGTH);
+    mutedTags[mutedTagCount][LOG_MAX_TAG_LENGTH] = '\0';
+    mutedTagCount++;
+    return true;
+}
+
+bool unmuteLogTag(const char* tag) {
+    size_t index = findMutedTagIndex(tag);
+    if (index >= mutedTagCount) {
+        return false;
+    }
+
+    for (size_t i = index; i + 1 < mutedTagCount; i++) {
+        memcpy(mutedTags[i], mutedTags[i + 1], sizeof(mutedTags[i]));
+    }
+
+    mutedTagCount--;
+    mutedTags[mutedTagCount][0] = '\0';
+    return true;
+}
+
+void clearMutedLogTags(void) {
+    mutedTagCount = 0;
+}
+
+bool isLogTagMuted(const char* tag) {
+    return findMutedTagIndex(tag) < mutedTagCount;
+}
+
+void logMessage(LogLevel level, const char* tag, const char* fmt, size_t argCount, const LogArg* args) {
+    if (loggerMuted) {
+        return;
+    }
+
+    if (isLogTagMuted(tag)) {
+        return;
+    }
+
     FILE* out = (level >= LOG_LEVEL_ERR) ? stderr : stdout;
-    const char* name = level_name(level);
-    const char* color = level_color(level);
+    const char* name = levelName(level);
+    const char* color = levelColor(level);
+    const char* safeFmt = (fmt != NULL) ? fmt : "";
     time_t now = time(NULL);
-    struct tm local;
+    struct tm localTime;
 #if defined(_WIN32)
-    localtime_s(&local, &now);
+    localtime_s(&localTime, &now);
 #else
-    localtime_r(&now, &local);
+    localtime_r(&now, &localTime);
 #endif
 
-    fprintf(out, "%s[%02d:%02d:%02d] [%s] ", color, local.tm_hour, local.tm_min, local.tm_sec, name);
-    print_formatted_message(out, fmt, arg_count, args);
+    fprintf(out, "%s[%02d:%02d:%02d] [%s]", color, localTime.tm_hour, localTime.tm_min, localTime.tm_sec, name);
+    if (tag != NULL && tag[0] != '\0') {
+        fprintf(out, " [%s]", tag);
+    }
+    fputc(' ', out);
+    printFormattedMessage(out, safeFmt, argCount, args);
     fprintf(out, "%s\n", ANSI_COLOR_RESET);
 }
 
-LogArg log_arg_char(char value) {
-    return (LogArg){ .type = LOG_ARG_CHAR, .data.char_value = value };
+LogArg logArgChar(char value) {
+    return (LogArg){ .type = LOG_ARG_CHAR, .data.charValue = value };
 }
 
-LogArg log_arg_i64(long long value) {
-    return (LogArg){ .type = LOG_ARG_I64, .data.i64_value = value };
+LogArg logArgI64(long long value) {
+    return (LogArg){ .type = LOG_ARG_I64, .data.i64Value = value };
 }
 
-LogArg log_arg_u64(unsigned long long value) {
-    return (LogArg){ .type = LOG_ARG_U64, .data.u64_value = value };
+LogArg logArgU64(unsigned long long value) {
+    return (LogArg){ .type = LOG_ARG_U64, .data.u64Value = value };
 }
 
-LogArg log_arg_double(double value) {
-    return (LogArg){ .type = LOG_ARG_DOUBLE, .data.double_value = value };
+LogArg logArgDouble(double value) {
+    return (LogArg){ .type = LOG_ARG_DOUBLE, .data.doubleValue = value };
 }
 
-LogArg log_arg_cstr(const char* value) {
-    return (LogArg){ .type = LOG_ARG_CSTR, .data.cstr_value = value };
+LogArg logArgCStr(const char* value) {
+    return (LogArg){ .type = LOG_ARG_CSTR, .data.cstrValue = value };
 }
 
-LogArg log_arg_ptr(const void* value) {
-    return (LogArg){ .type = LOG_ARG_PTR, .data.ptr_value = value };
+LogArg logArgPtr(const void* value) {
+    return (LogArg){ .type = LOG_ARG_PTR, .data.ptrValue = value };
 }
 
-LogArg log_arg_bool(int value) {
-    return (LogArg){ .type = LOG_ARG_BOOL, .data.bool_value = value };
+LogArg logArgBool(bool value) {
+    return (LogArg){ .type = LOG_ARG_BOOL, .data.boolValue = value };
 }

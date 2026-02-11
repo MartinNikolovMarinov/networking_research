@@ -1,12 +1,22 @@
 #include "logger.h"
 
 int main(void) {
-    void* t = NULL;
+    void* ptr = NULL;
 
-    logTrace("trace startup");
-    logInfo("char={} double={} string={}", (char)'a', 3.2, "testing");
-    logWarn("port {} is close to limit {}", 65000, 65535);
-    logErr("socket {} failed to connect", "127.0.0.1:8080");
-    logFatal("fatal code={} message={} void_ptr={}", 42, "demo", t);
+    logTraceTag("boot", "trace startup");
+    logInfoTag("net", "char={} double={} string={} ptr={}", 'a', 3.2, "testing", ptr);
+
+    muteLogTag("net");
+    logInfoTag("net", "this line is muted by tag");
+    logWarnTag("ui", "ui warning still visible");
+
+    setLoggerMuted(true);
+    logErrTag("db", "this line is muted globally");
+
+    setLoggerMuted(false);
+    unmuteLogTag("net");
+    logInfoTag("net", "tag {} restored", "net");
+    logFatal("fatal code={} message={}", 42, "demo");
+
     return 0;
 }
