@@ -2,6 +2,7 @@
 #include "nr_ansi_colors.h"
 #include "nr_time.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -19,23 +20,23 @@ static const char* skippedStr(bool useAnsiColors) {
     return useAnsiColors ? ANSI_COLOR_WARN "SKIPPED" ANSI_COLOR_RESET : "SKIPPED";
 }
 
-static const char* elapsedTimeToStr(uint64_t elapsedNs, char* buffer, size_t bufferSize) {
+static const char* elapsedTimeToStr(uint64_t elapsedNs, char* buffer, uint64_t bufferSize) {
     if (elapsedNs < 1000ULL) {
-        (void)snprintf(buffer, bufferSize, "%lluns", (unsigned long long)elapsedNs);
+        (void)snprintf(buffer, (size_t)bufferSize, "%" PRIu64 "ns", elapsedNs);
         return buffer;
     }
 
     if (elapsedNs < 1000000ULL) {
-        (void)snprintf(buffer, bufferSize, "%.3fus", (double)elapsedNs / 1000.0);
+        (void)snprintf(buffer, (size_t)bufferSize, "%.3fus", (double)elapsedNs / 1000.0);
         return buffer;
     }
 
     if (elapsedNs < 1000000000ULL) {
-        (void)snprintf(buffer, bufferSize, "%.3fms", (double)elapsedNs / 1000000.0);
+        (void)snprintf(buffer, (size_t)bufferSize, "%.3fms", (double)elapsedNs / 1000000.0);
         return buffer;
     }
 
-    (void)snprintf(buffer, bufferSize, "%.3fs", (double)elapsedNs / 1000000000.0);
+    (void)snprintf(buffer, (size_t)bufferSize, "%.3fs", (double)elapsedNs / 1000000000.0);
     return buffer;
 }
 
@@ -50,11 +51,11 @@ static void beginTestGroup(const TestGroup* group) {
 static void endTestGroup(
     const TestRunner* runner,
     const TestGroup* group,
-    int returnCode,
+    int32_t returnCode,
     uint64_t startTimeNs
 ) {
     char elapsedBuffer[TEST_TIME_BUFFER_SIZE];
-    uint64_t elapsedNs = getMonotonicTime() - startTimeNs;
+    uint64_t elapsedNs = nrGetMonotonicTime() - startTimeNs;
 
     printf("[SUITE %s] %s [ time: %s ]\n",
         passedOrFailedStr(returnCode == 0, runner->useAnsiColors),
@@ -67,20 +68,20 @@ static void skippedTest(const TestRunner* runner, const Test* test) {
 }
 
 static uint64_t beginTest(const Test* test) {
-    printf("\t[TEST # %d RUNNING] %s\n", test->testNumber, test->testRunParams.name);
-    return getMonotonicTime();
+    printf("\t[TEST # %" PRId32 " RUNNING] %s\n", test->testNumber, test->testRunParams.name);
+    return nrGetMonotonicTime();
 }
 
 static void endTest(
     const TestRunner* runner,
     const Test* test,
-    int returnCode,
+    int32_t returnCode,
     uint64_t startTimeNs
 ) {
     char elapsedBuffer[TEST_TIME_BUFFER_SIZE];
-    uint64_t elapsedNs = getMonotonicTime() - startTimeNs;
+    uint64_t elapsedNs = nrGetMonotonicTime() - startTimeNs;
 
-    printf("\t[TEST # %d %s] %s [ time: %s ]\n",
+    printf("\t[TEST # %" PRId32 " %s] %s [ time: %s ]\n",
         test->testNumber,
         passedOrFailedStr(returnCode == 0, runner->useAnsiColors),
         test->testRunParams.name,
@@ -88,7 +89,7 @@ static void endTest(
 }
 
 static bool groupHasOnly(const TestGroup* group) {
-    for (size_t i = 0; i < group->testsCount; i++) {
+    for (uint32_t i = 0; i < group->testsCount; i++) {
         if (group->tests[i].only && !group->tests[i].skip) {
             return true;
         }
@@ -96,30 +97,30 @@ static bool groupHasOnly(const TestGroup* group) {
     return false;
 }
 
-static int runTestGroup(
+static int32_t runTestGroup(
     const TestRunner* runner,
     TestGroup* group,
-    int* testCounter,
-    int* skippedTests,
-    int* passedTests,
-    int* failedTests
+    int32_t* testCounter,
+    int32_t* skippedTests,
+    int32_t* passedTests,
+    int32_t* failedTests
 ) {
     bool hasOnly = groupHasOnly(group);
     TestGroupRunParams groupParams = {
         .groupName = group->name,
-        .testsCount = (int)group->testsCount,
+        .testsCount = (int32_t)group->testsCount,
     };
 
     if (group->beforeAll != NULL) {
         group->beforeAll(&groupParams);
     }
 
-    for (size_t i = 0; i < group->testsCount; i++) {
+    for (uint32_t i = 0; i < group->testsCount; i++) {
         Test* test = &group->tests[i];
 
         if (test->testFunction == NULL) {
             *failedTests += 1;
-            printf("\t[TEST # %d %s] %s [ reason: missing test function ]\n",
+            printf("\t[TEST # %" PRId32 " %s] %s [ reason: missing test function ]\n",
                 *testCounter,
                 passedOrFailedStr(false, runner->useAnsiColors),
                 test->testRunParams.name != NULL ? test->testRunParams.name : "(unnamed)");
@@ -143,7 +144,7 @@ static int runTestGroup(
         }
 
         uint64_t startTimeNs = beginTest(test);
-        int returnCode = test->testFunction(&test->testRunParams);
+        int32_t returnCode = test->testFunction(&test->testRunParams);
         endTest(runner, test, returnCode, startTimeNs);
 
         if (group->afterEach != NULL) {
@@ -223,26 +224,26 @@ bool testGroupAddTest(TestGroup* group, const TestCreateInfo* info) {
     return true;
 }
 
-int testRunnerRunAllTestGroups(TestRunner* runner) {
+int32_t testRunnerRunAllTestGroups(TestRunner* runner) {
     if (runner == NULL) {
         return -1;
     }
 
     bool hasOnlyGroup = false;
-    for (size_t i = 0; i < runner->testGroupCount; i++) {
+    for (uint32_t i = 0; i < runner->testGroupCount; i++) {
         if (runner->testGroups[i].groupOnly && !runner->testGroups[i].groupSkip) {
             hasOnlyGroup = true;
             break;
         }
     }
 
-    int testCounter = 1;
-    int passedTests = 0;
-    int failedTests = 0;
-    int skippedTests = 0;
-    int skippedGroups = 0;
+    int32_t testCounter = 1;
+    int32_t passedTests = 0;
+    int32_t failedTests = 0;
+    int32_t skippedTests = 0;
+    int32_t skippedGroups = 0;
 
-    for (size_t i = 0; i < runner->testGroupCount; i++) {
+    for (uint32_t i = 0; i < runner->testGroupCount; i++) {
         TestGroup* group = &runner->testGroups[i];
 
         if ((hasOnlyGroup && !group->groupOnly) || group->groupSkip) {
@@ -251,14 +252,14 @@ int testRunnerRunAllTestGroups(TestRunner* runner) {
             continue;
         }
 
-        uint64_t startTimeNs = getMonotonicTime();
+        uint64_t startTimeNs = nrGetMonotonicTime();
         beginTestGroup(group);
 
-        int result = runTestGroup(runner, group, &testCounter, &skippedTests, &passedTests, &failedTests);
+        int32_t result = runTestGroup(runner, group, &testCounter, &skippedTests, &passedTests, &failedTests);
         endTestGroup(runner, group, result, startTimeNs);
 
         if (result != 0) {
-            printf("\n%s %d; %s %d; %s %d; %s %d\n",
+            printf("\n%s %" PRId32 "; %s %" PRId32 "; %s %" PRId32 "; %s %" PRId32 "\n",
                 runner->useAnsiColors ? ANSI_COLOR_INFO "Passed Tests:" ANSI_COLOR_RESET : "Passed Tests:",
                 passedTests,
                 runner->useAnsiColors ? ANSI_COLOR_ERR "Failed Tests:" ANSI_COLOR_RESET : "Failed Tests:",
@@ -271,24 +272,24 @@ int testRunnerRunAllTestGroups(TestRunner* runner) {
         }
     }
 
-    printf("\n%s %d",
+    printf("\n%s %" PRId32,
         runner->useAnsiColors ? ANSI_COLOR_INFO "Passed Tests:" ANSI_COLOR_RESET : "Passed Tests:",
         passedTests);
 
     if (failedTests > 0) {
-        printf("; %s %d",
+        printf("; %s %" PRId32,
             runner->useAnsiColors ? ANSI_COLOR_ERR "Failed Tests:" ANSI_COLOR_RESET : "Failed Tests:",
             failedTests);
     }
 
     if (skippedGroups > 0) {
-        printf("; %s %d",
+        printf("; %s %" PRId32,
             runner->useAnsiColors ? ANSI_COLOR_WARN "Skipped Groups:" ANSI_COLOR_RESET : "Skipped Groups:",
             skippedGroups);
     }
 
     if (skippedTests > 0) {
-        printf("; %s %d",
+        printf("; %s %" PRId32,
             runner->useAnsiColors ? ANSI_COLOR_WARN "Skipped Tests:" ANSI_COLOR_RESET : "Skipped Tests:",
             skippedTests);
     }

@@ -2,7 +2,7 @@
 #define NETWORKING_RESEARCH_TEST_RUNNER_H
 
 #include <stdbool.h>
-#include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,7 +18,7 @@ typedef struct TestGroupCreateInfo TestGroupCreateInfo;
 typedef struct TestGroup TestGroup;
 typedef struct TestRunner TestRunner;
 
-typedef int (*TestFunction)(TestRunParams* params);
+typedef int32_t (*TestFunction)(TestRunParams* params);
 typedef void (*BeforeAllTestsFunction)(const TestGroupRunParams* params);
 typedef void (*AfterAllTestsFunction)(const TestGroupRunParams* params);
 typedef void (*BeforeEachTestFunction)(TestRunParams* params);
@@ -31,7 +31,7 @@ struct TestRunParams {
 
 struct TestGroupRunParams {
     const char* groupName;
-    int testsCount;
+    int32_t testsCount;
 };
 
 struct TestCreateInfo {
@@ -53,7 +53,7 @@ struct TestGroupCreateInfo {
 };
 
 typedef struct Test {
-    int testNumber;
+    int32_t testNumber;
     bool only;
     bool skip;
     TestRunParams testRunParams;
@@ -69,18 +69,18 @@ struct TestGroup {
     BeforeEachTestFunction beforeEach;
     AfterEachTestFunction afterEach;
     Test tests[TEST_RUNNER_MAX_TESTS_PER_GROUP];
-    size_t testsCount;
+    uint32_t testsCount;
 };
 
 struct TestRunner {
     bool useAnsiColors;
     TestGroup testGroups[TEST_RUNNER_MAX_GROUPS];
-    size_t testGroupCount;
+    uint32_t testGroupCount;
 };
 
 void testRunnerInit(TestRunner* runner, bool useAnsiColors);
 TestGroup* testRunnerAddTestGroup(TestRunner* runner, const TestGroupCreateInfo* info);
-int testRunnerRunAllTestGroups(TestRunner* runner);
+int32_t testRunnerRunAllTestGroups(TestRunner* runner);
 
 bool testGroupAddTest(TestGroup* group, const TestCreateInfo* info);
 

@@ -1,6 +1,7 @@
 #include "nr_logger.h"
 #include "nr_ansi_colors.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -10,7 +11,7 @@
 
 static bool loggerMuted = false;
 static char mutedTags[LOG_MAX_MUTED_TAGS][LOG_MAX_TAG_LENGTH + 1];
-static size_t mutedTagCount = 0;
+static uint64_t mutedTagCount = 0;
 
 static const char* levelName(LogLevel level) {
     switch (level) {
@@ -34,12 +35,12 @@ static const char* levelColor(LogLevel level) {
     }
 }
 
-static size_t findMutedTagIndex(const char* tag) {
+static uint64_t findMutedTagIndex(const char* tag) {
     if (tag == NULL || tag[0] == '\0') {
         return mutedTagCount;
     }
 
-    for (size_t i = 0; i < mutedTagCount; i++) {
+    for (uint64_t i = 0; i < mutedTagCount; i++) {
         if (strcmp(mutedTags[i], tag) == 0) {
             return i;
         }
@@ -54,10 +55,10 @@ static void printArg(FILE* out, LogArg arg) {
             fprintf(out, "%c", arg.data.charValue);
             break;
         case LOG_ARG_I64:
-            fprintf(out, "%lld", arg.data.i64Value);
+            fprintf(out, "%" PRId64, arg.data.i64Value);
             break;
         case LOG_ARG_U64:
-            fprintf(out, "%llu", arg.data.u64Value);
+            fprintf(out, "%" PRIu64, arg.data.u64Value);
             break;
         case LOG_ARG_DOUBLE:
             fprintf(out, "%g", arg.data.doubleValue);
@@ -77,9 +78,9 @@ static void printArg(FILE* out, LogArg arg) {
     }
 }
 
-static void printFormattedMessage(FILE* out, const char* fmt, size_t argCount, const LogArg* args) {
-    size_t argIndex = 0;
-    for (size_t i = 0; fmt[i] != '\0'; i++) {
+static void printFormattedMessage(FILE* out, const char* fmt, uint64_t argCount, const LogArg* args) {
+    uint64_t argIndex = 0;
+    for (uint64_t i = 0; fmt[i] != '\0'; i++) {
         if (fmt[i] == '{' && fmt[i + 1] == '{') {
             fputc('{', out);
             i++;
@@ -106,15 +107,15 @@ static void printFormattedMessage(FILE* out, const char* fmt, size_t argCount, c
     }
 }
 
-void setLoggerMuted(bool muted) {
+void nrSetLoggerMuted(bool muted) {
     loggerMuted = muted;
 }
 
-bool isLoggerMuted(void) {
+bool nrIsLoggerMuted(void) {
     return loggerMuted;
 }
 
-bool muteLogTag(const char* tag) {
+bool nrMuteLogTag(const char* tag) {
     if (tag == NULL || tag[0] == '\0') {
         return false;
     }
@@ -133,13 +134,13 @@ bool muteLogTag(const char* tag) {
     return true;
 }
 
-bool unmuteLogTag(const char* tag) {
-    size_t index = findMutedTagIndex(tag);
+bool nrUnmuteLogTag(const char* tag) {
+    uint64_t index = findMutedTagIndex(tag);
     if (index >= mutedTagCount) {
         return false;
     }
 
-    for (size_t i = index; i + 1 < mutedTagCount; i++) {
+    for (uint64_t i = index; i + 1 < mutedTagCount; i++) {
         memcpy(mutedTags[i], mutedTags[i + 1], sizeof(mutedTags[i]));
     }
 
@@ -148,20 +149,20 @@ bool unmuteLogTag(const char* tag) {
     return true;
 }
 
-void clearMutedLogTags(void) {
+void nrClearMutedLogTags(void) {
     mutedTagCount = 0;
 }
 
-bool isLogTagMuted(const char* tag) {
+bool nrIsLogTagMuted(const char* tag) {
     return findMutedTagIndex(tag) < mutedTagCount;
 }
 
-void logMessage(LogLevel level, const char* tag, const char* fmt, size_t argCount, const LogArg* args) {
+void nrLogMessage(LogLevel level, const char* tag, const char* fmt, uint64_t argCount, const LogArg* args) {
     if (loggerMuted) {
         return;
     }
 
-    if (isLogTagMuted(tag)) {
+    if (nrIsLogTagMuted(tag)) {
         return;
     }
 
@@ -186,30 +187,30 @@ void logMessage(LogLevel level, const char* tag, const char* fmt, size_t argCoun
     fprintf(out, "%s\n", ANSI_COLOR_RESET);
 }
 
-LogArg logArgChar(char value) {
+LogArg nrLogArgChar(char value) {
     return (LogArg){ .type = LOG_ARG_CHAR, .data.charValue = value };
 }
 
-LogArg logArgI64(long long value) {
+LogArg nrLogArgI64(int64_t value) {
     return (LogArg){ .type = LOG_ARG_I64, .data.i64Value = value };
 }
 
-LogArg logArgU64(unsigned long long value) {
+LogArg nrLogArgU64(uint64_t value) {
     return (LogArg){ .type = LOG_ARG_U64, .data.u64Value = value };
 }
 
-LogArg logArgDouble(double value) {
+LogArg nrLogArgDouble(double value) {
     return (LogArg){ .type = LOG_ARG_DOUBLE, .data.doubleValue = value };
 }
 
-LogArg logArgCStr(const char* value) {
+LogArg nrLogArgCStr(const char* value) {
     return (LogArg){ .type = LOG_ARG_CSTR, .data.cstrValue = value };
 }
 
-LogArg logArgPtr(const void* value) {
+LogArg nrLogArgPtr(const void* value) {
     return (LogArg){ .type = LOG_ARG_PTR, .data.ptrValue = value };
 }
 
-LogArg logArgBool(bool value) {
+LogArg nrLogArgBool(bool value) {
     return (LogArg){ .type = LOG_ARG_BOOL, .data.boolValue = value };
 }

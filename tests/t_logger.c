@@ -1,70 +1,70 @@
 #include "tests_index.h"
 #include "nr_logger.h"
 
-static int tLoggerGlobalMute(TestRunParams* params) {
+static int32_t tLoggerGlobalMute(TestRunParams* params) {
     (void)params;
 
-    setLoggerMuted(false);
-    if (isLoggerMuted()) {
+    nrSetLoggerMuted(false);
+    if (nrIsLoggerMuted()) {
         return 1;
     }
 
-    setLoggerMuted(true);
-    if (!isLoggerMuted()) {
+    nrSetLoggerMuted(true);
+    if (!nrIsLoggerMuted()) {
         return 2;
     }
 
-    setLoggerMuted(false);
-    if (isLoggerMuted()) {
+    nrSetLoggerMuted(false);
+    if (nrIsLoggerMuted()) {
         return 3;
     }
 
     return 0;
 }
 
-static int tLoggerTagMute(TestRunParams* params) {
+static int32_t tLoggerTagMute(TestRunParams* params) {
     (void)params;
 
-    clearMutedLogTags();
+    nrClearMutedLogTags();
 
-    if (isLogTagMuted("net")) {
+    if (nrIsLogTagMuted("net")) {
         return 1;
     }
 
-    if (!muteLogTag("net")) {
+    if (!nrMuteLogTag("net")) {
         return 2;
     }
 
-    if (!isLogTagMuted("net")) {
+    if (!nrIsLogTagMuted("net")) {
         return 3;
     }
 
-    if (!unmuteLogTag("net")) {
+    if (!nrUnmuteLogTag("net")) {
         return 4;
     }
 
-    if (isLogTagMuted("net")) {
+    if (nrIsLogTagMuted("net")) {
         return 5;
     }
 
     return 0;
 }
 
-static int tLoggerSmoke(TestRunParams* params) {
+static int32_t tLoggerSmoke(TestRunParams* params) {
     (void)params;
 
-    clearMutedLogTags();
-    setLoggerMuted(false);
+    nrClearMutedLogTags();
+    nrSetLoggerMuted(false);
 
     LogArg infoArgs[3];
-    infoArgs[0] = logArgChar('a');
-    infoArgs[1] = logArgCStr("ok");
-    infoArgs[2] = logArgPtr(NULL);
-    logMessage(LOG_LEVEL_INFO, "logger", "smoke test char={} str={} ptr={}", 3, infoArgs);
+    infoArgs[0] = nrLogArgChar('a');
+    infoArgs[1] = nrLogArgCStr("ok");
+    infoArgs[2] = nrLogArgPtr(NULL);
+    nrLogMessage(LOG_LEVEL_INFO, "logger", "smoke test char={} str={} ptr={}", 3U, infoArgs);
 
     LogArg warnArgs[1];
-    warnArgs[0] = logArgI64(42);
-    logMessage(LOG_LEVEL_WARN, NULL, "smoke warning {}", 1, warnArgs);
+    warnArgs[0] = nrLogArgI64(42);
+    nrLogMessage(LOG_LEVEL_WARN, NULL, "smoke warning {}", 1U, warnArgs);
 
     return 0;
 }

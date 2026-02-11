@@ -5,8 +5,6 @@ macro(networking_research_target_set_default_flags
     is_debug
     save_temporary_files)
 
-    # -std=c++20
-
     set(common_flags -pthread)
     set(debug_flags "")
     set(release_flags "")

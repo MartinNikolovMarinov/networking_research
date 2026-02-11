@@ -55,6 +55,7 @@ log_info("---------------------------------------------")
 # ---------------------------------------- Begin Declare Source Files --------------------------------------------------
 
 set(src_common
+    src/nr_client.c
     src/nr_logger.c
     src/nr_time.c
 )

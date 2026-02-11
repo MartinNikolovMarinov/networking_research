@@ -26,8 +26,8 @@ static uint64_t readMonotonicTimeNs(void) {
     }
 
     uint64_t ret = 0;
-    unsigned long long scaledCounter = (unsigned long long)counter.QuadPart * NS_PER_SECOND;
-    ret = (uint64_t)(scaledCounter / (unsigned long long)freq.QuadPart);
+    uint64_t scaledCounter = (uint64_t)counter.QuadPart * NS_PER_SECOND;
+    ret = (uint64_t)(scaledCounter / (uint64_t)freq.QuadPart);
     return ret;
 #else
     struct timespec ts;
@@ -40,7 +40,7 @@ static uint64_t readMonotonicTimeNs(void) {
 #endif
 }
 
-uint64_t getMonotonicTime(void) {
+uint64_t nrGetMonotonicTime(void) {
     uint64_t ret = readMonotonicTimeNs();
     return ret;
 }

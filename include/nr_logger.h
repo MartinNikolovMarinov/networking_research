@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,8 +31,8 @@ typedef struct LogArg {
     LogArgType type;
     union {
         char charValue;
-        long long i64Value;
-        unsigned long long u64Value;
+        int64_t i64Value;
+        uint64_t u64Value;
         double doubleValue;
         const char* cstrValue;
         const void* ptrValue;
@@ -39,71 +40,71 @@ typedef struct LogArg {
     } data;
 } LogArg;
 
-void logMessage(LogLevel level, const char* tag, const char* fmt, size_t argCount, const LogArg* args);
+void nrLogMessage(LogLevel level, const char* tag, const char* fmt, uint64_t argCount, const LogArg* args);
 
-void setLoggerMuted(bool muted);
-bool isLoggerMuted(void);
-bool muteLogTag(const char* tag);
-bool unmuteLogTag(const char* tag);
-void clearMutedLogTags(void);
-bool isLogTagMuted(const char* tag);
+void nrSetLoggerMuted(bool muted);
+bool nrIsLoggerMuted(void);
+bool nrMuteLogTag(const char* tag);
+bool nrUnmuteLogTag(const char* tag);
+void nrClearMutedLogTags(void);
+bool nrIsLogTagMuted(const char* tag);
 
-LogArg logArgChar(char value);
-LogArg logArgI64(long long value);
-LogArg logArgU64(unsigned long long value);
-LogArg logArgDouble(double value);
-LogArg logArgCStr(const char* value);
-LogArg logArgPtr(const void* value);
-LogArg logArgBool(bool value);
+LogArg nrLogArgChar(char value);
+LogArg nrLogArgI64(int64_t value);
+LogArg nrLogArgU64(uint64_t value);
+LogArg nrLogArgDouble(double value);
+LogArg nrLogArgCStr(const char* value);
+LogArg nrLogArgPtr(const void* value);
+LogArg nrLogArgBool(bool value);
 
-static inline LogArg logArgCharToken(const char* token, char value) {
+static inline LogArg nrLogArgCharToken(const char* token, char value) {
     (void)token;
-    return logArgChar(value);
+    return nrLogArgChar(value);
 }
 
-static inline LogArg logArgI64Token(const char* token, long long value) {
+static inline LogArg nrLogArgI64Token(const char* token, int64_t value) {
     if (token != NULL && token[0] == '\'' && token[1] != '\0') {
         if (token[1] != '\\' && token[2] == '\'' && token[3] == '\0') {
-            return logArgChar(token[1]);
+            return nrLogArgChar(token[1]);
         }
         if (token[1] == '\\' && token[3] == '\'' && token[4] == '\0') {
             switch (token[2]) {
-                case 'n': return logArgChar('\n');
-                case 'r': return logArgChar('\r');
-                case 't': return logArgChar('\t');
-                case '\\': return logArgChar('\\');
-                case '\'': return logArgChar('\'');
-                case '0': return logArgChar('\0');
+                case 'n': return nrLogArgChar('\n');
+                case 'r': return nrLogArgChar('\r');
+                case 't': return nrLogArgChar('\t');
+                case '\\': return nrLogArgChar('\\');
+                case '\'': return nrLogArgChar('\'');
+                case '0': return nrLogArgChar('\0');
                 default: break;
             }
         }
     }
-    return logArgI64(value);
+    return nrLogArgI64(value);
 }
 
-static inline LogArg logArgU64Token(const char* token, unsigned long long value) {
+static inline LogArg nrLogArgU64Token(const char* token, uint64_t value) {
     (void)token;
-    return logArgU64(value);
+    return nrLogArgU64(value);
 }
 
-static inline LogArg logArgDoubleToken(const char* token, double value) {
+static inline LogArg nrLogArgDoubleToken(const char* token, double value) {
     (void)token;
-    return logArgDouble(value);
+    return nrLogArgDouble(value);
 }
 
-static inline LogArg logArgCStrToken(const char* token, const char* value) {
+static inline LogArg nrLogArgCStrToken(const char* token, const char* value) {
     (void)token;
-    return logArgCStr(value);
+    return nrLogArgCStr(value);
 }
 
-static inline LogArg logArgPtrToken(const char* token, const void* value) {
+static inline LogArg nrLogArgPtrToken(const char* token, const void* value) {
     (void)token;
-    return logArgPtr(value);
+    return nrLogArgPtr(value);
 }
 
-static inline LogArg logArgBoolToken(const char* token, bool value) {
+static inline LogArg nrLogArgBoolToken(const char* token, bool value) {
     (void)token;
-    return logArgBool(value);
+    return nrLogArgBool(value);
 }
 
 #define LOG_PP_MAP_1(m, a1) m(a1)
@@ -120,30 +121,28 @@ static inline LogArg logArgBoolToken(const char* token, bool value) {
 #define LOG_PP_MAP(m, ...) LOG_PP_GET_MAP(__VA_ARGS__, LOG_PP_MAP_10, LOG_PP_MAP_9, LOG_PP_MAP_8, LOG_PP_MAP_7, LOG_PP_MAP_6, LOG_PP_MAP_5, LOG_PP_MAP_4, LOG_PP_MAP_3, LOG_PP_MAP_2, LOG_PP_MAP_1)(m, __VA_ARGS__)
 
 #define LOG_ARG_VALUE(x) _Generic((x), \
-    char: logArgCharToken, \
-    signed char: logArgI64Token, \
-    unsigned char: logArgU64Token, \
-    short: logArgI64Token, \
-    unsigned short: logArgU64Token, \
-    int: logArgI64Token, \
-    unsigned int: logArgU64Token, \
-    long: logArgI64Token, \
-    unsigned long: logArgU64Token, \
-    long long: logArgI64Token, \
-    unsigned long long: logArgU64Token, \
-    float: logArgDoubleToken, \
-    double: logArgDoubleToken, \
-    long double: logArgDoubleToken, \
-    char*: logArgCStrToken, \
-    const char*: logArgCStrToken, \
-    void*: logArgPtrToken, \
-    const void*: logArgPtrToken, \
-    _Bool: logArgBoolToken, \
-    default: logArgPtrToken \
+    char: nrLogArgCharToken, \
+    int8_t: nrLogArgI64Token, \
+    uint8_t: nrLogArgU64Token, \
+    int16_t: nrLogArgI64Token, \
+    uint16_t: nrLogArgU64Token, \
+    int32_t: nrLogArgI64Token, \
+    uint32_t: nrLogArgU64Token, \
+    int64_t: nrLogArgI64Token, \
+    uint64_t: nrLogArgU64Token, \
+    float: nrLogArgDoubleToken, \
+    double: nrLogArgDoubleToken, \
+    long double: nrLogArgDoubleToken, \
+    char*: nrLogArgCStrToken, \
+    const char*: nrLogArgCStrToken, \
+    void*: nrLogArgPtrToken, \
+    const void*: nrLogArgPtrToken, \
+    _Bool: nrLogArgBoolToken, \
+    default: nrLogArgPtrToken \
 )(#x, (x))
 
 #define LOG_ARGS_ARRAY(...) ((LogArg[]){ LOG_PP_MAP(LOG_ARG_VALUE, __VA_ARGS__) })
-#define LOG_ARGS_COUNT(...) ((size_t)(sizeof((LogArg[]){ LOG_PP_MAP(LOG_ARG_VALUE, __VA_ARGS__) }) / sizeof(LogArg)))
+#define LOG_ARGS_COUNT(...) ((uint64_t)(sizeof((LogArg[]){ LOG_PP_MAP(LOG_ARG_VALUE, __VA_ARGS__) }) / sizeof(LogArg)))
 
 #define LOG_PP_CAT_(a, b) a##b
 #define LOG_PP_CAT(a, b) LOG_PP_CAT_(a, b)
@@ -151,8 +150,8 @@ static inline LogArg logArgBoolToken(const char* token, bool value) {
 #define LOG_PP_NARG_(...) LOG_PP_ARG_N(__VA_ARGS__)
 #define LOG_PP_NARG(...) LOG_PP_NARG_(_0 __VA_OPT__(,) __VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 
-#define LOG_CALL_0(level, fmt) logMessage((level), NULL, (fmt), 0, NULL)
-#define LOG_CALL_VA(level, fmt, ...) logMessage((level), NULL, (fmt), LOG_ARGS_COUNT(__VA_ARGS__), LOG_ARGS_ARRAY(__VA_ARGS__))
+#define LOG_CALL_0(level, fmt) nrLogMessage((level), NULL, (fmt), 0, NULL)
+#define LOG_CALL_VA(level, fmt, ...) nrLogMessage((level), NULL, (fmt), LOG_ARGS_COUNT(__VA_ARGS__), LOG_ARGS_ARRAY(__VA_ARGS__))
 #define LOG_CALL_1(level, fmt, ...) LOG_CALL_VA((level), (fmt), __VA_ARGS__)
 #define LOG_CALL_2(level, fmt, ...) LOG_CALL_VA((level), (fmt), __VA_ARGS__)
 #define LOG_CALL_3(level, fmt, ...) LOG_CALL_VA((level), (fmt), __VA_ARGS__)
@@ -164,8 +163,8 @@ static inline LogArg logArgBoolToken(const char* token, bool value) {
 #define LOG_CALL_9(level, fmt, ...) LOG_CALL_VA((level), (fmt), __VA_ARGS__)
 #define LOG_CALL_10(level, fmt, ...) LOG_CALL_VA((level), (fmt), __VA_ARGS__)
 
-#define LOG_CALL_TAG_0(level, tag, fmt) logMessage((level), (tag), (fmt), 0, NULL)
-#define LOG_CALL_TAG_VA(level, tag, fmt, ...) logMessage((level), (tag), (fmt), LOG_ARGS_COUNT(__VA_ARGS__), LOG_ARGS_ARRAY(__VA_ARGS__))
+#define LOG_CALL_TAG_0(level, tag, fmt) nrLogMessage((level), (tag), (fmt), 0, NULL)
+#define LOG_CALL_TAG_VA(level, tag, fmt, ...) nrLogMessage((level), (tag), (fmt), LOG_ARGS_COUNT(__VA_ARGS__), LOG_ARGS_ARRAY(__VA_ARGS__))
 #define LOG_CALL_TAG_1(level, tag, fmt, ...) LOG_CALL_TAG_VA((level), (tag), (fmt), __VA_ARGS__)
 #define LOG_CALL_TAG_2(level, tag, fmt, ...) LOG_CALL_TAG_VA((level), (tag), (fmt), __VA_ARGS__)
 #define LOG_CALL_TAG_3(level, tag, fmt, ...) LOG_CALL_TAG_VA((level), (tag), (fmt), __VA_ARGS__)
