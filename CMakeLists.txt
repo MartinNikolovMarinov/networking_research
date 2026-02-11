@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 project(rendering-techniques VERSION 0.0.1 LANGUAGES C CXX)
 
 set(target_sandbox sandbox)
+set(target_tests tests)
 
 # Standard Requirements:
 
@@ -54,13 +55,23 @@ log_info("---------------------------------------------")
 # ---------------------------------------- Begin Declare Source Files --------------------------------------------------
 
 set(src_common
-    src/logger.c
+    src/nr_logger.c
+    src/nr_time.c
 )
 
 set(src_sandbox
     ${src_common}
 
     sandbox.c
+)
+
+set(src_tests
+    ${src_common}
+
+    tests/test_runner.c
+    tests/tests_main.c
+    tests/tests_index.c
+    tests/t_logger.c
 )
 
 # ---------------------------------------- End Declare Source Files ----------------------------------------------------
@@ -81,5 +92,11 @@ endmacro()
 
 add_executable(${target_sandbox} ${src_sandbox})
 common_target_setup(${target_sandbox})
+
+add_executable(${target_tests} ${src_tests})
+common_target_setup(${target_tests})
+target_include_directories(${target_tests} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests
+)
 
 # ---------------------------------------- END Create Executable -------------------------------------------------------

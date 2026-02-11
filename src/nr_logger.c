@@ -1,5 +1,5 @@
-#include "logger.h"
-#include "ansi_colors.h"
+#include "nr_logger.h"
+#include "nr_ansi_colors.h"
 
 #include <stdio.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-#include "logger.h"
+#include "nr_logger.h"
 
 int main(void) {
     void* ptr = NULL;
