@@ -1,5 +1,5 @@
-#ifndef NETWORKING_RESEARCH_PERF_COUNTER_H
-#define NETWORKING_RESEARCH_PERF_COUNTER_H
+#ifndef NR_TIME_H
+#define NR_TIME_H
 
 #include <stdint.h>
 
@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-uint64_t getMonotonicTime(void);
+uint64_t nrGetMonotonicTime(void);
 
 #ifdef __cplusplus
 }
