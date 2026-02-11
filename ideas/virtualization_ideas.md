@@ -26,84 +26,97 @@
 - Estimated timeframe: 1-2 weeks (depends on host setup and tooling maturity).
 - Complexity: Medium to high.
 
-## 4. [PLANNED] Virtio-net driver deep-dive (guest side)
+## 4. [ACTIVE] Fair + deterministic networking client benchmark track (start early)
+- Goal: compare different client implementations using repeatable and fair measurements.
+- Scope:
+  - fixed environment controls (CPU pinning, MTU/sysctls, fixed topology, warmup, fixed seeds)
+  - fixed workload matrix (message sizes, connection counts, steady and burst profiles)
+  - metrics: throughput, p50/p95/p99 latency, packet loss/retransmits, CPU cost
+  - two scenario classes:
+    - ideal baseline (deterministic)
+    - impaired network profiles via `tc netem` (loss, delay, jitter)
+- Why: gives useful comparative signal early, even if it is not a perfect simulation of production traffic.
+- Estimated timeframe: 3-5 days for a useful MVP harness.
+- Complexity: Medium.
+
+## 5. [PLANNED] Virtio-net driver deep-dive (guest side)
 - Goal: understand RX/TX virtqueues and interrupts.
 - Scope: prototype a tiny userspace model first, then inspect Linux virtio-net behavior.
 - Why: best way to learn virtual NIC internals before writing custom code.
 - Estimated timeframe: 2-4 weeks for meaningful depth.
 - Complexity: High.
 
-## 5. [PLANNED] eBPF observability for virtual networking
+## 6. [PLANNED] eBPF observability for virtual networking
 - Goal: trace packet lifecycle across veth, bridge, tap, and virtio boundaries.
 - Scope: tc/xdp/bpftrace probes on host; per-hop latency and drop reason collection.
 - Why: gives hard evidence when tuning or debugging.
 - Estimated timeframe: 1-2 weeks for useful tracing dashboards and scripts.
 - Complexity: Medium to high.
 
-## 6. [PLANNED] Container networking internals (Docker + CNI style)
+## 7. [PLANNED] Container networking internals (Docker + CNI style)
 - Goal: reproduce what container runtimes do under the hood.
 - Scope: bridge, veth, iptables/nftables, port-mapping, service discovery mock.
 - Why: directly useful if you later include k8s.
 - Estimated timeframe: 1-2 weeks for a complete reproducible lab.
 - Complexity: Medium.
 
-## 7. [PLANNED] Kubernetes networking mini-lab
+## 8. [PLANNED] Kubernetes networking mini-lab
 - Goal: compare CNI models (bridge, overlay, eBPF dataplane).
 - Scope: kind/k3d cluster, network policies, service routing tests.
 - Why: higher-level orchestration + networking complexity.
 - Estimated timeframe: 2-3 weeks for meaningful comparisons.
 - Complexity: High.
 
-## 8. [PLANNED] SR-IOV and passthrough (advanced)
+## 9. [PLANNED] SR-IOV and passthrough (advanced)
 - Goal: compare paravirtualized virtio-net vs direct VF passthrough.
 - Scope: baseline throughput/latency and CPU cost.
 - Why: performance-focused direction for serious networking research.
 - Estimated timeframe: 2-4 weeks (hardware/platform dependent).
 - Complexity: Very high.
 
-## 9. [PLANNED] DPDK-based packet processing in VMs/containers
+## 10. [PLANNED] DPDK-based packet processing in VMs/containers
 - Goal: bypass kernel networking path for high PPS workloads.
 - Scope: run testpmd in guest/container, compare with kernel sockets.
 - Why: prepares ground for NFV-style experiments.
 - Estimated timeframe: 2-4 weeks for setup + first reliable benchmarks.
 - Complexity: Very high.
 
-## 10. [PLANNED] SPDK-inspired control/data plane split for network I/O
+## 11. [PLANNED] SPDK-inspired control/data plane split for network I/O
 - Goal: explore polled-mode, lockless queue design patterns for networking.
 - Scope: design a small prototype queue engine with fixed buffers.
 - Why: architectural learning from SPDK ideas without full NVMe scope.
 - Estimated timeframe: 2-3 weeks for a focused prototype.
 - Complexity: High.
 
-## 11. [PLANNED] Build a tiny L2/L3 userspace stack for experimentation
+## 12. [PLANNED] Build a tiny L2/L3 userspace stack for experimentation
 - Goal: implement ARP + IPv4 + ICMP + UDP subset.
 - Scope: run over TAP device and validate with tcpdump/wireshark.
 - Why: excellent systems exercise and directly relevant to virtual NIC work.
 - Estimated timeframe: 3-6 weeks depending on protocol depth and test quality.
 - Complexity: Very high.
 
-## 12. [PLANNED] Virtual switch prototype
+## 13. [PLANNED] Virtual switch prototype
 - Goal: implement a minimal software switch with MAC learning.
 - Scope: forwarding table, flooding, VLAN tagging support (optional).
 - Why: foundational for understanding OVS/bridge behavior.
 - Estimated timeframe: 2-4 weeks for a useful and testable implementation.
 - Complexity: High.
 
-## 13. [PLANNED] Fault-injection framework for virtual networks
+## 14. [PLANNED] Fault-injection framework for virtual networks
 - Goal: evaluate resilience under packet loss, reordering, duplication, jitter.
 - Scope: tc netem profiles + automated scenario runner.
 - Why: helps compare architecture choices under realistic failures.
 - Estimated timeframe: 1-2 weeks to build and integrate with your test workloads.
 - Complexity: Medium.
 
-## 14. [PLANNED] Security-focused virtualization networking
+## 15. [PLANNED] Security-focused virtualization networking
 - Goal: harden east-west traffic between VMs/containers.
 - Scope: microsegmentation policies, service identity, mTLS experiments.
 - Why: practical and high-value research topic.
 - Estimated timeframe: 2-4 weeks for baseline policy and threat-model-driven validation.
 - Complexity: High.
 
-## 15. [PLANNED] Reproducible benchmark harness
+## 16. [PLANNED] Reproducible benchmark harness
 - Goal: standardize measurements across namespaces, VMs, and containers.
 - Scope: automate ping, iperf3, netperf, pcap capture, CPU/mem metrics, report generation.
 - Why: converts experiments into publishable, comparable data.

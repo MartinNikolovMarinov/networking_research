@@ -141,8 +141,8 @@ static inline NrLogArg nrLogArgBoolToken(const char* token, bool value) {
     default: nrLogArgPtrToken \
 )(#x, (x))
 
-#define LOG_ARGS_ARRAY(...) ((LogArg[]){ LOG_PP_MAP(LOG_ARG_VALUE, __VA_ARGS__) })
-#define LOG_ARGS_COUNT(...) ((uint64_t)(sizeof((LogArg[]){ LOG_PP_MAP(LOG_ARG_VALUE, __VA_ARGS__) }) / sizeof(LogArg)))
+#define LOG_ARGS_ARRAY(...) ((NrLogArg[]){ LOG_PP_MAP(LOG_ARG_VALUE, __VA_ARGS__) })
+#define LOG_ARGS_COUNT(...) ((uint64_t)(sizeof((NrLogArg[]){ LOG_PP_MAP(LOG_ARG_VALUE, __VA_ARGS__) }) / sizeof(NrLogArg)))
 
 #define LOG_PP_CAT_(a, b) a##b
 #define LOG_PP_CAT(a, b) LOG_PP_CAT_(a, b)

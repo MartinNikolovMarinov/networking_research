@@ -1,6 +1,6 @@
 include(CompilerOptions)
 
-macro(networking_research_target_set_default_flags
+macro(networking_research_target_set_default_c_flags
     target
     is_debug
     save_temporary_files)
@@ -13,15 +13,15 @@ macro(networking_research_target_set_default_flags
         set(common_flags "${common_flags}" "-g" "-save-temps")
     endif()
 
-    generate_common_flags(
+    generate_common_c_flags(
         common_flags "${common_flags}"
         debug_flags "${debug_flags}"
         release_flags "${release_flags}"
     )
 
-    # This apperantly needs to be set after all other flags. Probably because of some ordering problem.
+    # This apparently needs to be set after all other flags due to ordering.
     set(common_flags ${common_flags}
-        -Wno-gnu-zero-variadic-macro-arguments # Supress warning for " , ##__VA_ARGS__ " in variadic macros
+        -Wno-gnu-zero-variadic-macro-arguments # Suppress warning for " , ##__VA_ARGS__ " in variadic macros
     )
 
     if(${is_debug})
@@ -31,4 +31,3 @@ macro(networking_research_target_set_default_flags
     endif()
 
 endmacro()
-

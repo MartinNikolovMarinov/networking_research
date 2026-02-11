@@ -96,7 +96,8 @@ static void printFormattedMessage(FILE* out, const char* fmt, uint64_t argCount,
         if (fmt[i] == '{' && fmt[i + 1] == '}') {
             if (argIndex < argCount) {
                 printArg(out, args[argIndex++]);
-            } else {
+            }
+            else {
                 fputs("{}", out);
             }
             i++;

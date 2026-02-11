@@ -77,6 +77,9 @@ set(src_tests
 )
 
 set(src_vm_to_vm_lab
+    ${src_common}
+
+    projects/vm_to_vm_lab/nr_virtual_interface.c
     projects/vm_to_vm_lab/vm_to_vm_lab_main.c
 )
 
@@ -93,7 +96,7 @@ macro(common_target_setup target)
         "IS_DEBUG=$<BOOL:${NETWORKING_RESEARCH_DEBUG}>"
     )
 
-    networking_research_target_set_default_flags(${target} ${NETWORKING_RESEARCH_DEBUG} false)
+    networking_research_target_set_default_c_flags(${target} ${NETWORKING_RESEARCH_DEBUG} false)
 endmacro()
 
 add_executable(${target_sandbox} ${src_sandbox})

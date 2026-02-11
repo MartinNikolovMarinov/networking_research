@@ -153,7 +153,8 @@ static int32_t runTestGroup(
 
         if (returnCode == 0) {
             *passedTests += 1;
-        } else {
+        }
+        else {
             *failedTests += 1;
             if (group->afterAll != NULL) {
                 group->afterAll(&groupParams);
