@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
-project(rendering-techniques VERSION 0.0.1 LANGUAGES C CXX)
+project(networking-research VERSION 0.0.1 LANGUAGES C CXX)
 
 set(target_sandbox sandbox)
 set(target_tests tests)
+set(target_vm_to_vm_lab vm_to_vm_lab)
 
 # Standard Requirements:
 
@@ -75,6 +76,10 @@ set(src_tests
     tests/t_logger.c
 )
 
+set(src_vm_to_vm_lab
+    projects/vm_to_vm_lab/vm_to_vm_lab_main.c
+)
+
 # ---------------------------------------- End Declare Source Files ----------------------------------------------------
 
 # ---------------------------------------- Begin Create Executable -----------------------------------------------------
@@ -99,5 +104,8 @@ common_target_setup(${target_tests})
 target_include_directories(${target_tests} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/tests
 )
+
+add_executable(${target_vm_to_vm_lab} ${src_vm_to_vm_lab})
+common_target_setup(${target_vm_to_vm_lab})
 
 # ---------------------------------------- END Create Executable -------------------------------------------------------

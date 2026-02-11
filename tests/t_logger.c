@@ -56,13 +56,13 @@ static int32_t tLoggerSmoke(TestRunParams* params) {
     nrClearMutedLogTags();
     nrSetLoggerMuted(false);
 
-    LogArg infoArgs[3];
+    NrLogArg infoArgs[3];
     infoArgs[0] = nrLogArgChar('a');
     infoArgs[1] = nrLogArgCStr("ok");
     infoArgs[2] = nrLogArgPtr(NULL);
     nrLogMessage(LOG_LEVEL_INFO, "logger", "smoke test char={} str={} ptr={}", 3U, infoArgs);
 
-    LogArg warnArgs[1];
+    NrLogArg warnArgs[1];
     warnArgs[0] = nrLogArgI64(42);
     nrLogMessage(LOG_LEVEL_WARN, NULL, "smoke warning {}", 1U, warnArgs);
 

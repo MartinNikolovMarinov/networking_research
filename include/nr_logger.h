@@ -9,15 +9,15 @@
 extern "C" {
 #endif
 
-typedef enum LogLevel {
+typedef enum NrLogLevel {
     LOG_LEVEL_TRACE = 0,
     LOG_LEVEL_INFO,
     LOG_LEVEL_WARN,
     LOG_LEVEL_ERR,
     LOG_LEVEL_FATAL,
-} LogLevel;
+} NrLogLevel;
 
-typedef enum LogArgType {
+typedef enum NrLogArgType {
     LOG_ARG_CHAR = 0,
     LOG_ARG_I64,
     LOG_ARG_U64,
@@ -25,10 +25,10 @@ typedef enum LogArgType {
     LOG_ARG_CSTR,
     LOG_ARG_PTR,
     LOG_ARG_BOOL,
-} LogArgType;
+} NrLogArgType;
 
-typedef struct LogArg {
-    LogArgType type;
+typedef struct NrLogArg {
+    NrLogArgType type;
     union {
         char charValue;
         int64_t i64Value;
@@ -38,9 +38,9 @@ typedef struct LogArg {
         const void* ptrValue;
         bool boolValue;
     } data;
-} LogArg;
+} NrLogArg;
 
-void nrLogMessage(LogLevel level, const char* tag, const char* fmt, uint64_t argCount, const LogArg* args);
+void nrLogMessage(NrLogLevel level, const char* tag, const char* fmt, uint64_t argCount, const NrLogArg* args);
 
 void nrSetLoggerMuted(bool muted);
 bool nrIsLoggerMuted(void);
@@ -49,20 +49,20 @@ bool nrUnmuteLogTag(const char* tag);
 void nrClearMutedLogTags(void);
 bool nrIsLogTagMuted(const char* tag);
 
-LogArg nrLogArgChar(char value);
-LogArg nrLogArgI64(int64_t value);
-LogArg nrLogArgU64(uint64_t value);
-LogArg nrLogArgDouble(double value);
-LogArg nrLogArgCStr(const char* value);
-LogArg nrLogArgPtr(const void* value);
-LogArg nrLogArgBool(bool value);
+NrLogArg nrLogArgChar(char value);
+NrLogArg nrLogArgI64(int64_t value);
+NrLogArg nrLogArgU64(uint64_t value);
+NrLogArg nrLogArgDouble(double value);
+NrLogArg nrLogArgCStr(const char* value);
+NrLogArg nrLogArgPtr(const void* value);
+NrLogArg nrLogArgBool(bool value);
 
-static inline LogArg nrLogArgCharToken(const char* token, char value) {
+static inline NrLogArg nrLogArgCharToken(const char* token, char value) {
     (void)token;
     return nrLogArgChar(value);
 }
 
-static inline LogArg nrLogArgI64Token(const char* token, int64_t value) {
+static inline NrLogArg nrLogArgI64Token(const char* token, int64_t value) {
     if (token != NULL && token[0] == '\'' && token[1] != '\0') {
         if (token[1] != '\\' && token[2] == '\'' && token[3] == '\0') {
             return nrLogArgChar(token[1]);
@@ -82,27 +82,27 @@ static inline LogArg nrLogArgI64Token(const char* token, int64_t value) {
     return nrLogArgI64(value);
 }
 
-static inline LogArg nrLogArgU64Token(const char* token, uint64_t value) {
+static inline NrLogArg nrLogArgU64Token(const char* token, uint64_t value) {
     (void)token;
     return nrLogArgU64(value);
 }
 
-static inline LogArg nrLogArgDoubleToken(const char* token, double value) {
+static inline NrLogArg nrLogArgDoubleToken(const char* token, double value) {
     (void)token;
     return nrLogArgDouble(value);
 }
 
-static inline LogArg nrLogArgCStrToken(const char* token, const char* value) {
+static inline NrLogArg nrLogArgCStrToken(const char* token, const char* value) {
     (void)token;
     return nrLogArgCStr(value);
 }
 
-static inline LogArg nrLogArgPtrToken(const char* token, const void* value) {
+static inline NrLogArg nrLogArgPtrToken(const char* token, const void* value) {
     (void)token;
     return nrLogArgPtr(value);
 }
 
-static inline LogArg nrLogArgBoolToken(const char* token, bool value) {
+static inline NrLogArg nrLogArgBoolToken(const char* token, bool value) {
     (void)token;
     return nrLogArgBool(value);
 }
