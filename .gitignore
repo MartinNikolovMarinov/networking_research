@@ -1,6 +1,8 @@
 .cache
+.codex
 build
 
 AGENTS.md
-skills
+RULES.md
 notes
+ideas

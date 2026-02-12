@@ -1,5 +1,5 @@
-#ifndef NETWORKING_RESEARCH_TEST_RUNNER_H
-#define NETWORKING_RESEARCH_TEST_RUNNER_H
+#ifndef NR_TEST_RUNNER_H
+#define NR_TEST_RUNNER_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -8,81 +8,81 @@
 extern "C" {
 #endif
 
-#define TEST_RUNNER_MAX_TESTS_PER_GROUP 255
-#define TEST_RUNNER_MAX_GROUPS 64
+#define NR_TEST_RUNNER_MAX_TESTS_PER_GROUP 255
+#define NR_TEST_RUNNER_MAX_GROUPS 64
 
-typedef struct TestRunParams TestRunParams;
-typedef struct TestGroupRunParams TestGroupRunParams;
-typedef struct TestCreateInfo TestCreateInfo;
-typedef struct TestGroupCreateInfo TestGroupCreateInfo;
-typedef struct TestGroup TestGroup;
-typedef struct TestRunner TestRunner;
+typedef struct NrTestRunParams NrTestRunParams;
+typedef struct NrTestGroupRunParams NrTestGroupRunParams;
+typedef struct NrTestCreateInfo NrTestCreateInfo;
+typedef struct NrTestGroupCreateInfo NrTestGroupCreateInfo;
+typedef struct NrTestGroup NrTestGroup;
+typedef struct NrTestRunner NrTestRunner;
 
-typedef int32_t (*TestFunction)(TestRunParams* params);
-typedef void (*BeforeAllTestsFunction)(const TestGroupRunParams* params);
-typedef void (*AfterAllTestsFunction)(const TestGroupRunParams* params);
-typedef void (*BeforeEachTestFunction)(TestRunParams* params);
-typedef void (*AfterEachTestFunction)(TestRunParams* params);
+typedef int32_t (*NrTestFunction)(NrTestRunParams* params);
+typedef void (*NrBeforeAllTestsFunction)(const NrTestGroupRunParams* params);
+typedef void (*NrAfterAllTestsFunction)(const NrTestGroupRunParams* params);
+typedef void (*NrBeforeEachTestFunction)(NrTestRunParams* params);
+typedef void (*NrAfterEachTestFunction)(NrTestRunParams* params);
 
-struct TestRunParams {
+struct NrTestRunParams {
     const char* name;
     const void* userData;
 };
 
-struct TestGroupRunParams {
+struct NrTestGroupRunParams {
     const char* groupName;
     int32_t testsCount;
 };
 
-struct TestCreateInfo {
+struct NrTestCreateInfo {
     const char* name;
-    TestFunction testFunction;
+    NrTestFunction testFunction;
     bool only;
     bool skip;
     const void* userData;
 };
 
-struct TestGroupCreateInfo {
+struct NrTestGroupCreateInfo {
     const char* name;
     bool groupOnly;
     bool groupSkip;
-    BeforeAllTestsFunction beforeAll;
-    AfterAllTestsFunction afterAll;
-    BeforeEachTestFunction beforeEach;
-    AfterEachTestFunction afterEach;
+    NrBeforeAllTestsFunction beforeAll;
+    NrAfterAllTestsFunction afterAll;
+    NrBeforeEachTestFunction beforeEach;
+    NrAfterEachTestFunction afterEach;
 };
 
-typedef struct Test {
+typedef struct NrTest {
     int32_t testNumber;
     bool only;
     bool skip;
-    TestRunParams testRunParams;
-    TestFunction testFunction;
-} Test;
+    NrTestRunParams testRunParams;
+    NrTestFunction testFunction;
+} NrTest;
 
-struct TestGroup {
+struct NrTestGroup {
     bool groupOnly;
     bool groupSkip;
     const char* name;
-    BeforeAllTestsFunction beforeAll;
-    AfterAllTestsFunction afterAll;
-    BeforeEachTestFunction beforeEach;
-    AfterEachTestFunction afterEach;
-    Test tests[TEST_RUNNER_MAX_TESTS_PER_GROUP];
+    NrBeforeAllTestsFunction beforeAll;
+    NrAfterAllTestsFunction afterAll;
+    NrBeforeEachTestFunction beforeEach;
+    NrAfterEachTestFunction afterEach;
+    NrTest tests[NR_TEST_RUNNER_MAX_TESTS_PER_GROUP];
     uint32_t testsCount;
 };
 
-struct TestRunner {
+struct NrTestRunner {
     bool useAnsiColors;
-    TestGroup testGroups[TEST_RUNNER_MAX_GROUPS];
+    NrTestGroup testGroups[NR_TEST_RUNNER_MAX_GROUPS];
     uint32_t testGroupCount;
 };
 
-void testRunnerInit(TestRunner* runner, bool useAnsiColors);
-TestGroup* testRunnerAddTestGroup(TestRunner* runner, const TestGroupCreateInfo* info);
-int32_t testRunnerRunAllTestGroups(TestRunner* runner);
+void nrTestRunnerInit(NrTestRunner* runner, bool useAnsiColors);
+NrTestGroup* nrTestRunnerAddTestGroup(NrTestRunner* runner, const NrTestGroupCreateInfo* info);
+int32_t nrTestRunnerRunAllTestGroups(NrTestRunner* runner);
 
-bool testGroupAddTest(TestGroup* group, const TestCreateInfo* info);
+bool nrTestGroupAddTest(NrTestGroup* group, const NrTestCreateInfo* info);
 
 #ifdef __cplusplus
 }

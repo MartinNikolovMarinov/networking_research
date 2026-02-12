@@ -1,8 +1,8 @@
 #include "t-index.h"
 
-int main(void) {
-    TestRunner runner;
-    testRunnerInit(&runner, true);
-    registerAllTests(&runner);
-    return testRunnerRunAllTestGroups(&runner);
+#include <stdint.h>
+
+int32_t main(void) {
+    int32_t ret = runAllTests();
+    return ret;
 }

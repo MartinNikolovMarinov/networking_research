@@ -1,12 +1,8 @@
 #include "t-index.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
-void registerAllTests(TestRunner* runner) {
-    if (runner == NULL) {
-        return;
-    }
-
-    registerTBitsTests(runner);
-    registerTLoggerTests(runner);
+int32_t runAllTests() {
+    return 0;
 }

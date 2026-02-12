@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#if OS_WINDOWS == 1
+#if NR_OS_WINDOWS == 1
     #define WIN32_LEAN_AND_MEAN
     #include <windows.h>
 #else
@@ -13,7 +13,7 @@
 #define NS_PER_SECOND 1000000000ULL
 
 static uint64_t readMonotonicTimeNs(void) {
-#if OS_WINDOWS == 1
+#if NR_OS_WINDOWS == 1
     LARGE_INTEGER freq;
     LARGE_INTEGER counter;
 

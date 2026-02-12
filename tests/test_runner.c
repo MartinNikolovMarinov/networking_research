@@ -11,13 +11,13 @@
 
 static const char* passedOrFailedStr(bool passed, bool useAnsiColors) {
     if (useAnsiColors) {
-        return passed ? ANSI_COLOR_INFO "PASSED" ANSI_COLOR_RESET : ANSI_COLOR_ERR "FAILED" ANSI_COLOR_RESET;
+        return passed ? NR_ANSI_COLOR_INFO "PASSED" NR_ANSI_COLOR_RESET : NR_ANSI_COLOR_ERR "FAILED" NR_ANSI_COLOR_RESET;
     }
     return passed ? "PASSED" : "FAILED";
 }
 
 static const char* skippedStr(bool useAnsiColors) {
-    return useAnsiColors ? ANSI_COLOR_WARN "SKIPPED" ANSI_COLOR_RESET : "SKIPPED";
+    return useAnsiColors ? NR_ANSI_COLOR_WARN "SKIPPED" NR_ANSI_COLOR_RESET : "SKIPPED";
 }
 
 static const char* elapsedTimeToStr(uint64_t elapsedNs, char* buffer, uint64_t bufferSize) {
@@ -40,17 +40,17 @@ static const char* elapsedTimeToStr(uint64_t elapsedNs, char* buffer, uint64_t b
     return buffer;
 }
 
-static void skippedTestGroup(const TestRunner* runner, const char* groupName) {
+static void skippedTestGroup(const NrTestRunner* runner, const char* groupName) {
     printf("[SUITE %s] %s\n", skippedStr(runner->useAnsiColors), groupName != NULL ? groupName : "(unnamed)");
 }
 
-static void beginTestGroup(const TestGroup* group) {
+static void beginTestGroup(const NrTestGroup* group) {
     printf("[SUITE RUNNING] %s\n", group->name != NULL ? group->name : "(unnamed)");
 }
 
 static void endTestGroup(
-    const TestRunner* runner,
-    const TestGroup* group,
+    const NrTestRunner* runner,
+    const NrTestGroup* group,
     int32_t returnCode,
     uint64_t startTimeNs
 ) {
@@ -63,18 +63,18 @@ static void endTestGroup(
         elapsedTimeToStr(elapsedNs, elapsedBuffer, sizeof(elapsedBuffer)));
 }
 
-static void skippedTest(const TestRunner* runner, const Test* test) {
+static void skippedTest(const NrTestRunner* runner, const NrTest* test) {
     printf("\t[TEST %s] %s\n", skippedStr(runner->useAnsiColors), test->testRunParams.name);
 }
 
-static uint64_t beginTest(const Test* test) {
+static uint64_t beginTest(const NrTest* test) {
     printf("\t[TEST # %" PRId32 " RUNNING] %s\n", test->testNumber, test->testRunParams.name);
     return nrGetMonotonicTime();
 }
 
 static void endTest(
-    const TestRunner* runner,
-    const Test* test,
+    const NrTestRunner* runner,
+    const NrTest* test,
     int32_t returnCode,
     uint64_t startTimeNs
 ) {
@@ -88,7 +88,7 @@ static void endTest(
         elapsedTimeToStr(elapsedNs, elapsedBuffer, sizeof(elapsedBuffer)));
 }
 
-static bool groupHasOnly(const TestGroup* group) {
+static bool groupHasOnly(const NrTestGroup* group) {
     for (uint32_t i = 0; i < group->testsCount; i++) {
         if (group->tests[i].only && !group->tests[i].skip) {
             return true;
@@ -98,15 +98,15 @@ static bool groupHasOnly(const TestGroup* group) {
 }
 
 static int32_t runTestGroup(
-    const TestRunner* runner,
-    TestGroup* group,
+    const NrTestRunner* runner,
+    NrTestGroup* group,
     int32_t* testCounter,
     int32_t* skippedTests,
     int32_t* passedTests,
     int32_t* failedTests
 ) {
     bool hasOnly = groupHasOnly(group);
-    TestGroupRunParams groupParams = {
+    NrTestGroupRunParams groupParams = {
         .groupName = group->name,
         .testsCount = (int32_t)group->testsCount,
     };
@@ -116,7 +116,7 @@ static int32_t runTestGroup(
     }
 
     for (uint32_t i = 0; i < group->testsCount; i++) {
-        Test* test = &group->tests[i];
+        NrTest* test = &group->tests[i];
 
         if (test->testFunction == NULL) {
             *failedTests += 1;
@@ -170,7 +170,7 @@ static int32_t runTestGroup(
     return 0;
 }
 
-void testRunnerInit(TestRunner* runner, bool useAnsiColors) {
+void nrTestRunnerInit(NrTestRunner* runner, bool useAnsiColors) {
     if (runner == NULL) {
         return;
     }
@@ -179,16 +179,16 @@ void testRunnerInit(TestRunner* runner, bool useAnsiColors) {
     runner->useAnsiColors = useAnsiColors;
 }
 
-TestGroup* testRunnerAddTestGroup(TestRunner* runner, const TestGroupCreateInfo* info) {
+NrTestGroup* nrTestRunnerAddTestGroup(NrTestRunner* runner, const NrTestGroupCreateInfo* info) {
     if (runner == NULL || info == NULL) {
         return NULL;
     }
 
-    if (runner->testGroupCount >= TEST_RUNNER_MAX_GROUPS) {
+    if (runner->testGroupCount >= NR_TEST_RUNNER_MAX_GROUPS) {
         return NULL;
     }
 
-    TestGroup* group = &runner->testGroups[runner->testGroupCount];
+    NrTestGroup* group = &runner->testGroups[runner->testGroupCount];
     memset(group, 0, sizeof(*group));
 
     group->groupOnly = info->groupOnly;
@@ -203,16 +203,16 @@ TestGroup* testRunnerAddTestGroup(TestRunner* runner, const TestGroupCreateInfo*
     return group;
 }
 
-bool testGroupAddTest(TestGroup* group, const TestCreateInfo* info) {
+bool nrTestGroupAddTest(NrTestGroup* group, const NrTestCreateInfo* info) {
     if (group == NULL || info == NULL || info->testFunction == NULL) {
         return false;
     }
 
-    if (group->testsCount >= TEST_RUNNER_MAX_TESTS_PER_GROUP) {
+    if (group->testsCount >= NR_TEST_RUNNER_MAX_TESTS_PER_GROUP) {
         return false;
     }
 
-    Test* test = &group->tests[group->testsCount];
+    NrTest* test = &group->tests[group->testsCount];
     memset(test, 0, sizeof(*test));
 
     test->only = info->only;
@@ -225,7 +225,7 @@ bool testGroupAddTest(TestGroup* group, const TestCreateInfo* info) {
     return true;
 }
 
-int32_t testRunnerRunAllTestGroups(TestRunner* runner) {
+int32_t nrTestRunnerRunAllTestGroups(NrTestRunner* runner) {
     if (runner == NULL) {
         return -1;
     }
@@ -245,7 +245,7 @@ int32_t testRunnerRunAllTestGroups(TestRunner* runner) {
     int32_t skippedGroups = 0;
 
     for (uint32_t i = 0; i < runner->testGroupCount; i++) {
-        TestGroup* group = &runner->testGroups[i];
+        NrTestGroup* group = &runner->testGroups[i];
 
         if ((hasOnlyGroup && !group->groupOnly) || group->groupSkip) {
             skippedTestGroup(runner, group->name);
@@ -261,37 +261,37 @@ int32_t testRunnerRunAllTestGroups(TestRunner* runner) {
 
         if (result != 0) {
             printf("\n%s %" PRId32 "; %s %" PRId32 "; %s %" PRId32 "; %s %" PRId32 "\n",
-                runner->useAnsiColors ? ANSI_COLOR_INFO "Passed Tests:" ANSI_COLOR_RESET : "Passed Tests:",
+                runner->useAnsiColors ? NR_ANSI_COLOR_INFO "Passed Tests:" NR_ANSI_COLOR_RESET : "Passed Tests:",
                 passedTests,
-                runner->useAnsiColors ? ANSI_COLOR_ERR "Failed Tests:" ANSI_COLOR_RESET : "Failed Tests:",
+                runner->useAnsiColors ? NR_ANSI_COLOR_ERR "Failed Tests:" NR_ANSI_COLOR_RESET : "Failed Tests:",
                 failedTests,
-                runner->useAnsiColors ? ANSI_COLOR_WARN "Skipped Tests:" ANSI_COLOR_RESET : "Skipped Tests:",
+                runner->useAnsiColors ? NR_ANSI_COLOR_WARN "Skipped Tests:" NR_ANSI_COLOR_RESET : "Skipped Tests:",
                 skippedTests,
-                runner->useAnsiColors ? ANSI_COLOR_WARN "Skipped Groups:" ANSI_COLOR_RESET : "Skipped Groups:",
+                runner->useAnsiColors ? NR_ANSI_COLOR_WARN "Skipped Groups:" NR_ANSI_COLOR_RESET : "Skipped Groups:",
                 skippedGroups);
             return result;
         }
     }
 
     printf("\n%s %" PRId32,
-        runner->useAnsiColors ? ANSI_COLOR_INFO "Passed Tests:" ANSI_COLOR_RESET : "Passed Tests:",
+        runner->useAnsiColors ? NR_ANSI_COLOR_INFO "Passed Tests:" NR_ANSI_COLOR_RESET : "Passed Tests:",
         passedTests);
 
     if (failedTests > 0) {
         printf("; %s %" PRId32,
-            runner->useAnsiColors ? ANSI_COLOR_ERR "Failed Tests:" ANSI_COLOR_RESET : "Failed Tests:",
+            runner->useAnsiColors ? NR_ANSI_COLOR_ERR "Failed Tests:" NR_ANSI_COLOR_RESET : "Failed Tests:",
             failedTests);
     }
 
     if (skippedGroups > 0) {
         printf("; %s %" PRId32,
-            runner->useAnsiColors ? ANSI_COLOR_WARN "Skipped Groups:" ANSI_COLOR_RESET : "Skipped Groups:",
+            runner->useAnsiColors ? NR_ANSI_COLOR_WARN "Skipped Groups:" NR_ANSI_COLOR_RESET : "Skipped Groups:",
             skippedGroups);
     }
 
     if (skippedTests > 0) {
         printf("; %s %" PRId32,
-            runner->useAnsiColors ? ANSI_COLOR_WARN "Skipped Tests:" ANSI_COLOR_RESET : "Skipped Tests:",
+            runner->useAnsiColors ? NR_ANSI_COLOR_WARN "Skipped Tests:" NR_ANSI_COLOR_RESET : "Skipped Tests:",
             skippedTests);
     }
 

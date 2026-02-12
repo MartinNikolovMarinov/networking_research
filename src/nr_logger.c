@@ -6,34 +6,34 @@
 #include <string.h>
 #include <time.h>
 
-#define LOG_MAX_MUTED_TAGS 64
-#define LOG_MAX_TAG_LENGTH 63
+#define NR_LOG_MAX_MUTED_TAGS 64
+#define NR_LOG_MAX_TAG_LENGTH 63
 
 static bool loggerMuted = false;
-static char mutedTags[LOG_MAX_MUTED_TAGS][LOG_MAX_TAG_LENGTH + 1];
+static char mutedTags[NR_LOG_MAX_MUTED_TAGS][NR_LOG_MAX_TAG_LENGTH + 1];
 static uint64_t mutedTagCount = 0;
 static NrLogHandler customLogHandler = NULL;
 static void* customLogHandlerUserData = NULL;
 
 static const char* levelName(NrLogLevel level) {
     switch (level) {
-        case LOG_LEVEL_TRACE: return "TRACE";
-        case LOG_LEVEL_INFO: return "INFO";
-        case LOG_LEVEL_WARN: return "WARN";
-        case LOG_LEVEL_ERR: return "ERROR";
-        case LOG_LEVEL_FATAL: return "FATAL";
+        case NR_LOG_LEVEL_TRACE: return "TRACE";
+        case NR_LOG_LEVEL_INFO: return "INFO";
+        case NR_LOG_LEVEL_WARN: return "WARN";
+        case NR_LOG_LEVEL_ERR: return "ERROR";
+        case NR_LOG_LEVEL_FATAL: return "FATAL";
         default: return "UNKNOWN";
     }
 }
 
 static const char* levelColor(NrLogLevel level) {
     switch (level) {
-        case LOG_LEVEL_TRACE: return ANSI_COLOR_TRACE;
-        case LOG_LEVEL_INFO: return ANSI_COLOR_INFO;
-        case LOG_LEVEL_WARN: return ANSI_COLOR_WARN;
-        case LOG_LEVEL_ERR: return ANSI_COLOR_ERR;
-        case LOG_LEVEL_FATAL: return ANSI_COLOR_FATAL;
-        default: return ANSI_COLOR_RESET;
+        case NR_LOG_LEVEL_TRACE: return NR_ANSI_COLOR_TRACE;
+        case NR_LOG_LEVEL_INFO: return NR_ANSI_COLOR_INFO;
+        case NR_LOG_LEVEL_WARN: return NR_ANSI_COLOR_WARN;
+        case NR_LOG_LEVEL_ERR: return NR_ANSI_COLOR_ERR;
+        case NR_LOG_LEVEL_FATAL: return NR_ANSI_COLOR_FATAL;
+        default: return NR_ANSI_COLOR_RESET;
     }
 }
 
@@ -53,25 +53,25 @@ static uint64_t findMutedTagIndex(const char* tag) {
 
 static void printArg(FILE* out, NrLogArg arg) {
     switch (arg.type) {
-        case LOG_ARG_CHAR:
+        case NR_LOG_ARG_CHAR:
             fprintf(out, "%c", arg.data.charValue);
             break;
-        case LOG_ARG_I64:
+        case NR_LOG_ARG_I64:
             fprintf(out, "%" PRId64, arg.data.i64Value);
             break;
-        case LOG_ARG_U64:
+        case NR_LOG_ARG_U64:
             fprintf(out, "%" PRIu64, arg.data.u64Value);
             break;
-        case LOG_ARG_DOUBLE:
+        case NR_LOG_ARG_DOUBLE:
             fprintf(out, "%g", arg.data.doubleValue);
             break;
-        case LOG_ARG_CSTR:
+        case NR_LOG_ARG_CSTR:
             fprintf(out, "%s", arg.data.cstrValue != NULL ? arg.data.cstrValue : "(nil)");
             break;
-        case LOG_ARG_PTR:
+        case NR_LOG_ARG_PTR:
             fprintf(out, "%p", arg.data.ptrValue);
             break;
-        case LOG_ARG_BOOL:
+        case NR_LOG_ARG_BOOL:
             fprintf(out, "%s", arg.data.boolValue ? "true" : "false");
             break;
         default:
@@ -137,12 +137,12 @@ bool nrMuteLogTag(const char* tag) {
         return true;
     }
 
-    if (mutedTagCount >= LOG_MAX_MUTED_TAGS) {
+    if (mutedTagCount >= NR_LOG_MAX_MUTED_TAGS) {
         return false;
     }
 
-    strncpy(mutedTags[mutedTagCount], tag, LOG_MAX_TAG_LENGTH);
-    mutedTags[mutedTagCount][LOG_MAX_TAG_LENGTH] = '\0';
+    strncpy(mutedTags[mutedTagCount], tag, NR_LOG_MAX_TAG_LENGTH);
+    mutedTags[mutedTagCount][NR_LOG_MAX_TAG_LENGTH] = '\0';
     mutedTagCount++;
     return true;
 }
@@ -184,7 +184,7 @@ void nrLogMessage(NrLogLevel level, const char* tag, const char* fmt, uint64_t a
         return;
     }
 
-    FILE* out = (level >= LOG_LEVEL_ERR) ? stderr : stdout;
+    FILE* out = (level >= NR_LOG_LEVEL_ERR) ? stderr : stdout;
     const char* name = levelName(level);
     const char* color = levelColor(level);
     const char* safeFmt = (fmt != NULL) ? fmt : "";
@@ -202,33 +202,33 @@ void nrLogMessage(NrLogLevel level, const char* tag, const char* fmt, uint64_t a
     }
     fputc(' ', out);
     printFormattedMessage(out, safeFmt, argCount, args);
-    fprintf(out, "%s\n", ANSI_COLOR_RESET);
+    fprintf(out, "%s\n", NR_ANSI_COLOR_RESET);
 }
 
 NrLogArg nrLogArgChar(char value) {
-    return (NrLogArg){ .type = LOG_ARG_CHAR, .data.charValue = value };
+    return (NrLogArg){ .type = NR_LOG_ARG_CHAR, .data.charValue = value };
 }
 
 NrLogArg nrLogArgI64(int64_t value) {
-    return (NrLogArg){ .type = LOG_ARG_I64, .data.i64Value = value };
+    return (NrLogArg){ .type = NR_LOG_ARG_I64, .data.i64Value = value };
 }
 
 NrLogArg nrLogArgU64(uint64_t value) {
-    return (NrLogArg){ .type = LOG_ARG_U64, .data.u64Value = value };
+    return (NrLogArg){ .type = NR_LOG_ARG_U64, .data.u64Value = value };
 }
 
 NrLogArg nrLogArgDouble(double value) {
-    return (NrLogArg){ .type = LOG_ARG_DOUBLE, .data.doubleValue = value };
+    return (NrLogArg){ .type = NR_LOG_ARG_DOUBLE, .data.doubleValue = value };
 }
 
 NrLogArg nrLogArgCStr(const char* value) {
-    return (NrLogArg){ .type = LOG_ARG_CSTR, .data.cstrValue = value };
+    return (NrLogArg){ .type = NR_LOG_ARG_CSTR, .data.cstrValue = value };
 }
 
 NrLogArg nrLogArgPtr(const void* value) {
-    return (NrLogArg){ .type = LOG_ARG_PTR, .data.ptrValue = value };
+    return (NrLogArg){ .type = NR_LOG_ARG_PTR, .data.ptrValue = value };
 }
 
 NrLogArg nrLogArgBool(bool value) {
-    return (NrLogArg){ .type = LOG_ARG_BOOL, .data.boolValue = value };
+    return (NrLogArg){ .type = NR_LOG_ARG_BOOL, .data.boolValue = value };
 }
