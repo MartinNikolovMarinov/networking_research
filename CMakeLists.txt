@@ -56,6 +56,7 @@ log_info("---------------------------------------------")
 # ---------------------------------------- Begin Declare Source Files --------------------------------------------------
 
 set(src_common
+    src/nr_bits.c
     src/nr_client.c
     src/nr_logger.c
     src/nr_time.c
@@ -72,8 +73,9 @@ set(src_tests
 
     tests/test_runner.c
     tests/tests_main.c
-    tests/tests_index.c
-    tests/t_logger.c
+    tests/t-index.c
+    tests/t-bits.c
+    tests/t-logger.c
 )
 
 set(src_vm_to_vm_lab

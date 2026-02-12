@@ -40,7 +40,18 @@ typedef struct NrLogArg {
     } data;
 } NrLogArg;
 
+typedef void (*NrLogHandler)(
+    NrLogLevel level,
+    const char* tag,
+    const char* fmt,
+    uint64_t argCount,
+    const NrLogArg* args,
+    void* userData
+);
+
 void nrLogMessage(NrLogLevel level, const char* tag, const char* fmt, uint64_t argCount, const NrLogArg* args);
+void nrSetLogHandler(NrLogHandler handler, void* userData);
+void nrResetLogHandler(void);
 
 void nrSetLoggerMuted(bool muted);
 bool nrIsLoggerMuted(void);

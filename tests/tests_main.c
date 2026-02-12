@@ -1,4 +1,4 @@
-#include "tests_index.h"
+#include "t-index.h"
 
 int main(void) {
     TestRunner runner;

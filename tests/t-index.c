@@ -1,4 +1,4 @@
-#include "tests_index.h"
+#include "t-index.h"
 
 #include <stddef.h>
 
@@ -7,5 +7,6 @@ void registerAllTests(TestRunner* runner) {
         return;
     }
 
+    registerTBitsTests(runner);
     registerTLoggerTests(runner);
 }

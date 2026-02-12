@@ -12,6 +12,8 @@
 static bool loggerMuted = false;
 static char mutedTags[LOG_MAX_MUTED_TAGS][LOG_MAX_TAG_LENGTH + 1];
 static uint64_t mutedTagCount = 0;
+static NrLogHandler customLogHandler = NULL;
+static void* customLogHandlerUserData = NULL;
 
 static const char* levelName(NrLogLevel level) {
     switch (level) {
@@ -108,6 +110,16 @@ static void printFormattedMessage(FILE* out, const char* fmt, uint64_t argCount,
     }
 }
 
+void nrSetLogHandler(NrLogHandler handler, void* userData) {
+    customLogHandler = handler;
+    customLogHandlerUserData = userData;
+}
+
+void nrResetLogHandler(void) {
+    customLogHandler = NULL;
+    customLogHandlerUserData = NULL;
+}
+
 void nrSetLoggerMuted(bool muted) {
     loggerMuted = muted;
 }
@@ -164,6 +176,11 @@ void nrLogMessage(NrLogLevel level, const char* tag, const char* fmt, uint64_t a
     }
 
     if (nrIsLogTagMuted(tag)) {
+        return;
+    }
+
+    if (customLogHandler != NULL) {
+        customLogHandler(level, tag, fmt, argCount, args, customLogHandlerUserData);
         return;
     }
 

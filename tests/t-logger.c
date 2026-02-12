@@ -1,5 +1,32 @@
-#include "tests_index.h"
+#include "t-index.h"
 #include "nr_logger.h"
+
+typedef struct LogCapture {
+    uint64_t calls;
+    NrLogLevel lastLevel;
+} LogCapture;
+
+static void captureLogHandler(
+    NrLogLevel level,
+    const char* tag,
+    const char* fmt,
+    uint64_t argCount,
+    const NrLogArg* args,
+    void* userData
+) {
+    (void)tag;
+    (void)fmt;
+    (void)argCount;
+    (void)args;
+
+    LogCapture* capture = (LogCapture*)userData;
+    if (capture == NULL) {
+        return;
+    }
+
+    capture->calls++;
+    capture->lastLevel = level;
+}
 
 static int32_t tLoggerGlobalMute(TestRunParams* params) {
     (void)params;
@@ -55,6 +82,13 @@ static int32_t tLoggerSmoke(TestRunParams* params) {
 
     nrClearMutedLogTags();
     nrSetLoggerMuted(false);
+    nrResetLogHandler();
+
+    LogCapture capture = {
+        .calls = 0U,
+        .lastLevel = LOG_LEVEL_TRACE,
+    };
+    nrSetLogHandler(captureLogHandler, &capture);
 
     NrLogArg infoArgs[3];
     infoArgs[0] = nrLogArgChar('a');
@@ -65,6 +99,15 @@ static int32_t tLoggerSmoke(TestRunParams* params) {
     NrLogArg warnArgs[1];
     warnArgs[0] = nrLogArgI64(42);
     nrLogMessage(LOG_LEVEL_WARN, NULL, "smoke warning {}", 1U, warnArgs);
+
+    nrResetLogHandler();
+
+    if (capture.calls != 2U) {
+        return 1;
+    }
+    if (capture.lastLevel != LOG_LEVEL_WARN) {
+        return 2;
+    }
 
     return 0;
 }

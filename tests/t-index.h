@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 void registerAllTests(TestRunner* runner);
+void registerTBitsTests(TestRunner* runner);
 void registerTLoggerTests(TestRunner* runner);
 
 #ifdef __cplusplus
