@@ -1,8 +1,9 @@
+.vscode
 .cache
 .codex
 build
+ideas
+notes
 
 AGENTS.md
 RULES.md
-notes
-ideas
