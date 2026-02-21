@@ -1,9 +1,4 @@
 .vscode
 .cache
-.codex
+.clangd
 build
-ideas
-notes
-
-AGENTS.md
-RULES.md
