@@ -1,6 +1,6 @@
 #include "core_init.h"
 
-#include "core_init.h"
+namespace {
 
 void assertHandler(const char* failedExpr, const char* file, i32 line, const char* funcName, const char* errMsg) {
     // Using iostream here since assertions can happen inside core as well.
@@ -50,15 +50,27 @@ core::AllocatorContext createDefautAllocatorCtx() {
     return core::createAllocatorCtx(&g_defaultAllocator);
 }
 
+} // namespace
+
 void coreInit(core::LogLevel globalLogLevel) {
     core::rndInit();
 
     core::LoggerCreateInfo loggerInfo = core::LoggerCreateInfo::createDefault();
-    core::loggerSetLevel(globalLogLevel);
-    core::initProgramCtx(assertHandler, &loggerInfo, createDefautAllocatorCtx());
+    loggerInfo.allocatorId = +RegisteredAllocators::LOGGER_ALLOCATOR_ID;
+    if constexpr (USE_ANSI_LOGGING) {
+        loggerInfo.useAnsi = true;
+    }
+    else {
+        loggerInfo.useAnsi = false;
+    }
 
-    core::registerAllocator(core::createAllocatorCtx(&g_stdAllocator), +RegisteredAllocators::RA_STD_ALLOCATOR_ID);
-    core::registerAllocator(core::createAllocatorCtx(&g_statsStdAllocator), +RegisteredAllocators::RA_STD_STATS_ALLOCATOR_ID);
+    core::registerAllocator(core::createAllocatorCtx(&g_stdAllocator), +RegisteredAllocators::STD_ALLOCATOR_ID);
+    core::registerAllocator(core::createAllocatorCtx(&g_statsStdAllocator), +RegisteredAllocators::STD_STATS_ALLOCATOR_ID);
+    core::registerAllocator(core::createAllocatorCtx(&g_statsStdAllocator), +RegisteredAllocators::LOGGER_ALLOCATOR_ID);
+
+    core::loggerSetLevel(globalLogLevel);
+
+    core::initProgramCtx(assertHandler, &loggerInfo, createDefautAllocatorCtx());
 }
 
 void coreShutdown() {

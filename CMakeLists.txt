@@ -41,6 +41,10 @@ include(SpCompilerOptions)
 
 init_logger("[SYSTEM_PROGRAMMING]")
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    log_fatal("MSVC compiler not supported")
+endif()
+
 # ---------------------------------------- Begin Options ---------------------------------------------------------------
 
 if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -70,6 +74,8 @@ log_info("Use Ansi Logging:          ${USE_ANSI_LOGGING}")
 set(src_common
 
     src/core_init.cpp
+
+    src/diagnostics/diagnostics.cpp
 )
 
 set(src_sandbox

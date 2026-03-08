@@ -27,6 +27,8 @@ macro(sp_target_set_default_flags
     # This apperantly needs to be set after all other flags. Probably because of some ordering problem.
     set(common_flags ${common_flags}
         -Wno-gnu-zero-variadic-macro-arguments # Supress warning for " , ##__VA_ARGS__ " in variadic macros
+        -Wno-gnu-statement-expression-from-macro-expansion
+        -Wno-gnu-statement-expression
     )
 
     if(${is_debug})

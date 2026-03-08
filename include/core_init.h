@@ -6,12 +6,13 @@
 using namespace coretypes;
 
 enum struct RegisteredAllocators : core::AllocatorId {
-    RA_DEFAULT,
+    DEFAULT,
 
-    RA_STD_ALLOCATOR_ID,
-    RA_STD_STATS_ALLOCATOR_ID,
+    STD_ALLOCATOR_ID,
+    STD_STATS_ALLOCATOR_ID,
+    LOGGER_ALLOCATOR_ID,
 
-    RA_SENTINEL
+    SENTINEL
 };
 CORE_ENUM_DECLARE_INT_OPS(RegisteredAllocators, core::AllocatorId)
 
